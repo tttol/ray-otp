@@ -1,0 +1,255 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "How a TOTP Authenticator Generates a Code",
+    "locale": "en",
+    "viewBox": [1060, 950],
+    "quality_profile": "showcase",
+    "column_fit": "spread",
+    "views": [
+      {
+        "id": "enrollment",
+        "label": "One-time enrollment",
+        "focus": ["user", "provider", "app"],
+        "note": "The provider and authenticator receive the same secret K."
+      },
+      {
+        "id": "local-generation",
+        "label": "Local generation",
+        "focus": ["app", "clock", "user"],
+        "note": "The app generates the code locally from K and the current time."
+      },
+      {
+        "id": "verification",
+        "label": "Server verification",
+        "focus": ["user", "provider", "clock"],
+        "note": "The provider independently computes the expected code."
+      }
+    ]
+  },
+  "participants": [
+    {
+      "id": "user",
+      "type": "external",
+      "label": "User",
+      "sublabel": "scans + enters"
+    },
+    {
+      "id": "provider",
+      "type": "security",
+      "label": "Provider",
+      "sublabel": "verifies OTP"
+    },
+    {
+      "id": "app",
+      "type": "frontend",
+      "label": "Authenticator",
+      "sublabel": "stores K + code"
+    },
+    {
+      "id": "clock",
+      "type": "backend",
+      "label": "System Clock",
+      "sublabel": "Unix time"
+    },
+    {
+      "id": "local_crypto",
+      "type": "security",
+      "label": "App TOTP",
+      "sublabel": "local crypto"
+    },
+    {
+      "id": "server_crypto",
+      "type": "security",
+      "label": "Server TOTP",
+      "sublabel": "same algorithm"
+    }
+  ],
+  "segments": [
+    { "from": 160, "to": 320, "label": "Enrollment" },
+    { "from": 345, "to": 575, "label": "Code generation" },
+    { "from": 600, "to": 790, "label": "Verification" }
+  ],
+  "messages": [
+    {
+      "id": "enable-mfa",
+      "from": "user",
+      "to": "provider",
+      "y": 195,
+      "label": "enable TOTP",
+      "variant": "default"
+    },
+    {
+      "id": "show-qr",
+      "from": "provider",
+      "to": "user",
+      "y": 235,
+      "label": "show QR containing secret K",
+      "variant": "security"
+    },
+    {
+      "id": "scan-qr",
+      "from": "user",
+      "to": "app",
+      "y": 275,
+      "label": "scan QR / store K",
+      "variant": "emphasis"
+    },
+    {
+      "id": "read-app-time",
+      "from": "app",
+      "to": "clock",
+      "y": 365,
+      "label": "read Unix time",
+      "variant": "default"
+    },
+    {
+      "id": "return-app-time",
+      "from": "clock",
+      "to": "app",
+      "y": 400,
+      "label": "current time",
+      "variant": "return"
+    },
+    {
+      "id": "derive-counter",
+      "from": "app",
+      "to": "local_crypto",
+      "y": 435,
+      "label": "derive T from time",
+      "variant": "emphasis",
+      "note": "T = floor((time - T0) / X); usually X = 30 seconds."
+    },
+    {
+      "id": "return-counter",
+      "from": "local_crypto",
+      "to": "app",
+      "y": 470,
+      "label": "counter T",
+      "variant": "return"
+    },
+    {
+      "id": "calculate-hmac",
+      "from": "app",
+      "to": "local_crypto",
+      "y": 505,
+      "label": "HMAC-SHA1(K, T)",
+      "variant": "security"
+    },
+    {
+      "id": "truncate-code",
+      "from": "local_crypto",
+      "to": "app",
+      "y": 540,
+      "label": "truncate → mod 10^6",
+      "variant": "return",
+      "note": "Zero-pad the result to six digits."
+    },
+    {
+      "id": "display-code",
+      "from": "app",
+      "to": "user",
+      "y": 565,
+      "label": "display 6-digit OTP",
+      "variant": "return"
+    },
+    {
+      "id": "submit-code",
+      "from": "user",
+      "to": "provider",
+      "y": 640,
+      "label": "submit OTP",
+      "variant": "emphasis"
+    },
+    {
+      "id": "read-provider-time",
+      "from": "provider",
+      "to": "clock",
+      "y": 680,
+      "label": "read Unix time",
+      "variant": "default"
+    },
+    {
+      "id": "return-provider-time",
+      "from": "clock",
+      "to": "provider",
+      "y": 715,
+      "label": "current time",
+      "variant": "return"
+    },
+    {
+      "id": "recompute-code",
+      "from": "provider",
+      "to": "server_crypto",
+      "y": 750,
+      "label": "recompute using K",
+      "variant": "security",
+      "note": "The provider runs the same TOTP algorithm independently."
+    },
+    {
+      "id": "return-expected",
+      "from": "server_crypto",
+      "to": "provider",
+      "y": 780,
+      "label": "expected OTP",
+      "variant": "return"
+    },
+    {
+      "id": "accept-code",
+      "from": "provider",
+      "to": "user",
+      "y": 830,
+      "label": "accept or reject",
+      "variant": "return"
+    }
+  ],
+  "activations": [
+    { "participant": "provider", "from": 195, "to": 325, "type": "security" },
+    { "participant": "app", "from": 275, "to": 585, "type": "frontend" },
+    { "participant": "clock", "from": 365, "to": 410, "type": "backend" },
+    {
+      "participant": "local_crypto",
+      "from": 430,
+      "to": 550,
+      "type": "security"
+    },
+    { "participant": "provider", "from": 640, "to": 840, "type": "security" },
+    { "participant": "clock", "from": 680, "to": 725, "type": "backend" },
+    {
+      "participant": "server_crypto",
+      "from": 750,
+      "to": 800,
+      "type": "security"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "violet",
+      "title": "Shared secret K",
+      "items": [
+        "The provider and app receive the same secret during enrollment",
+        "The secret is used as the HMAC key",
+        "It is not sent with every OTP request"
+      ]
+    },
+    {
+      "dot": "cyan",
+      "title": "TOTP calculation",
+      "items": [
+        "Time becomes a moving counter T",
+        "HMAC produces a deterministic pseudorandom value",
+        "Truncation and modulo produce six decimal digits"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Verification",
+      "items": [
+        "The provider calculates the expected OTP independently",
+        "Both sides must have compatible clocks",
+        "Rate limiting protects the short numeric code"
+      ]
+    }
+  ]
+}

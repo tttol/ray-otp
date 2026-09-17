@@ -1,0 +1,56 @@
+{
+  "name": "ray-otp",
+  "title": "ray-otp",
+  "description": "Generate and copy local TOTP codes without network access.",
+  "icon": "generic.png",
+  "author": "tttol",
+  "license": "MIT",
+  "platforms": [
+    "macOS"
+  ],
+  "categories": [
+    "Security",
+    "Developer Tools"
+  ],
+  "keywords": [
+    "otp",
+    "totp",
+    "2fa",
+    "two-factor authentication",
+    "authenticator"
+  ],
+  "commands": [
+    {
+      "name": "index",
+      "title": "Show OTP Codes",
+      "description": "Show and copy locally generated TOTP codes.",
+      "mode": "view"
+    }
+  ],
+  "scripts": {
+    "prepare:helper": "node scripts/build-helper.mjs",
+    "predev": "npm run prepare:helper",
+    "prebuild": "npm run prepare:helper",
+    "dev": "ray develop",
+    "build": "ray build",
+    "lint": "prettier --check package.json tsconfig.json eslint.config.mjs src tests && eslint src tests && tsc --noEmit",
+    "test": "node --import tsx --test tests/*.test.ts",
+    "test:keychain": "node scripts/test-keychain.mjs",
+    "format": "prettier --write ."
+  },
+  "dependencies": {
+    "@raycast/api": "1.104.25",
+    "jpeg-js": "0.4.4",
+    "pngjs": "7.0.0"
+  },
+  "devDependencies": {
+    "@raycast/eslint-config": "2.2.0",
+    "@types/node": "22.20.3",
+    "@types/pngjs": "6.0.5",
+    "@types/react": "19.3.0",
+    "eslint": "9.39.5",
+    "prettier": "3.9.6",
+    "tsx": "4.23.13",
+    "typescript": "5.9.3"
+  }
+}
